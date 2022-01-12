@@ -5,53 +5,49 @@ using System.Linq;
 
 namespace AutomatonMinimization
 {
-    public class MealyMinimizer : IConverter
+    public class MealyMooreConverter : IConverter
     {
         private Dictionary<string, List<Action>> _initialStatesToActions;
-        private Dictionary<string, List<Action>> _currentStatesToActions;
-        private Dictionary<string, List<string>> _prevEqualClasses;
-        private Dictionary<string, List<string>> _currentEqualClasses;
-        private Dictionary<string, Dictionary<string, Action>> _result;
-        private Dictionary<string, string> _hashToEqualClassNames;
+        private Dictionary<string, Dictionary<Tuple<string, string>, Action>> _result;
+        private SortedDictionary<Tuple<string, string>, string> _mooreStates;
+        private int _mooreStateCounter = 0;
 
-        public MealyMinimizer()
+        public MealyMooreConverter()
         {
             _initialStatesToActions = new Dictionary<string, List<Action>>();
-            _prevEqualClasses = new Dictionary<string, List<string>>();
-            _currentEqualClasses = new Dictionary<string, List<string>>();
-            _result = new Dictionary<string, Dictionary<string, Action>>();
-            _hashToEqualClassNames = new Dictionary<string, string>();
+            _mooreStates = new SortedDictionary<Tuple<string, string>, string>();
+            _result = new Dictionary<string, Dictionary<Tuple<string, string>, Action>>();
         }
 
         public void Convert()
         {
-            while ( !CheckEqualityStates() )
+            BuildMooreStates();
+            if ( _mooreStates.Count == 0 )
             {
-                MinimizeStep();
+                throw new Exception( "moore states was empty" );
             }
 
-            if ( _currentEqualClasses.Count > 0 )
-            {
-                _result = BuildMinimizeResult();
-            }
-            else
-            {
-                throw new Exception();
-            }
+            BuildConvertingResult();
         }
 
         public void Write( StreamWriter outputStream )
         {
-            List<string> heads = _result.SelectMany( a => a.Value.Select( b => b.Key ) ).Distinct().ToList();
-            outputStream.WriteLine( $"   {String.Join( "   ", heads ) }" );
+            foreach ( var moreState in _mooreStates )
+            {
+                outputStream.WriteLine( $"{{{moreState.Key.Item1};{moreState.Key.Item2}}} -> {{{moreState.Value}}}" );
+            }
+            outputStream.WriteLine();
 
-            foreach ( KeyValuePair<string, Dictionary<string, Action>> inputSignalToStates in _result )
+            var heads = _result.SelectMany( a => a.Value.Select( b => $"{b.Key.Item1}/{b.Key.Item2}" ) ).Distinct().ToList();
+            outputStream.WriteLine( $"   {String.Join( " ", heads ) }" );
+
+            foreach ( var inputSignalToStates in _result )
             {
                 outputStream.Write( $"{inputSignalToStates.Key}  " );
-                foreach ( KeyValuePair<string, Action> stateToAction in inputSignalToStates.Value )
+                foreach ( var stateToAction in inputSignalToStates.Value )
                 {
                     Action action = stateToAction.Value;
-                    outputStream.Write( $"{action.NewState}/{action.OutputSignal} " );
+                    outputStream.Write( $"{action.NewState}   " );
                 }
                 outputStream.WriteLine();
             }
@@ -67,7 +63,7 @@ namespace AutomatonMinimization
                 actionsCounter++;
                 List<Action> actions = inputString.Split( " " ).Select( actionString =>
                     new Action(
-                           Convert.ToString( actionsCounter ),
+                           System.Convert.ToString( actionsCounter ),
                            actionString.Split( "/" ).Last(),
                            actionString.Split( "/" ).First()
                      ) ).ToList();
@@ -86,113 +82,49 @@ namespace AutomatonMinimization
                     }
                 }
             }
-
-            _currentEqualClasses = CombineEqualStates( _initialStatesToActions );
-            _currentStatesToActions = CreateStatesToActions( _currentEqualClasses );
         }
 
-        private Dictionary<string, Dictionary<string, Action>> BuildMinimizeResult()
+        private void BuildConvertingResult()
         {
-            Dictionary<string, Dictionary<string, Action>> result = new Dictionary<string, Dictionary<string, Action>>();
-
-            int counter = 0;
-            foreach ( var equalClass in _currentEqualClasses )
+            foreach ( var mooreState in _mooreStates )
             {
-                _hashToEqualClassNames.Add( equalClass.Key, $"S{counter}" );
-                counter++;
-            }
-
-            foreach ( KeyValuePair<string, List<string>> equalClass in _currentEqualClasses )
-            {
-                string resultEqualClass = _hashToEqualClassNames[equalClass.Key];
-                string resultEqualClassState = equalClass.Value.First();
-                List<Action> actions = _initialStatesToActions[resultEqualClassState];
-                foreach ( Action action in actions )
+                var actions = _initialStatesToActions[mooreState.Key.Item1];
+                foreach ( var action in actions )
                 {
-                    string resultEqualClassNewStateHashCode = _currentEqualClasses
-                            .Where( a => a.Value.Contains( action.NewState ) )
-                            .Select( a => a.Key ).First();
-                    string resultEqualClassNewState = _hashToEqualClassNames[resultEqualClassNewStateHashCode];
-
-                    if ( !result.ContainsKey( action.InputSignal ) )
+                    var key = Tuple.Create( action.NewState, action.OutputSignal );
+                    var nextMooreState = _mooreStates[key];
+                    if ( !_result.ContainsKey( action.InputSignal ) )
                     {
-                        result.Add( action.InputSignal, new Dictionary<string, Action>() );
-                        
+                        _result.Add( action.InputSignal, new Dictionary<Tuple<string, string>, Action>() );
                     }
 
-                    result[action.InputSignal].Add(
-                            resultEqualClass,
-                            new Action( action.InputSignal, action.OutputSignal, resultEqualClassNewState ) );
+                    _result[action.InputSignal].Add(
+                            Tuple.Create( mooreState.Value, mooreState.Key.Item2 ),
+                            new Action( action.InputSignal, action.OutputSignal, nextMooreState )
+                        );
                 }
             }
-
-            return result;
         }
 
-        private bool CheckEqualityStates()
+        private void BuildMooreStates()
         {
-            if ( _currentEqualClasses.Count == 0 || _prevEqualClasses.Count == 0 )
+            foreach ( var stateToAction in _initialStatesToActions )
             {
-                return false;
-            }
-
-            return _prevEqualClasses.Count == _currentEqualClasses.Count;
-        }
-
-        private void MinimizeStep()
-        {
-            _prevEqualClasses = _currentEqualClasses;
-            _currentEqualClasses = CombineEqualStates( _currentStatesToActions );
-            _currentStatesToActions = CreateStatesToActions( _currentEqualClasses );
-        }
-
-        private Dictionary<string, List<Action>> CreateStatesToActions( Dictionary<string, List<string>> equalClasses )
-        {
-            Dictionary<string, List<Action>> statesToActions = new Dictionary<string, List<Action>>();
-            foreach ( KeyValuePair<string, List<string>> equalClass in equalClasses )
-            {
-                foreach ( string state in equalClass.Value )
+                foreach ( var action in stateToAction.Value )
                 {
-                    List<Action> actions;
-                    if ( _initialStatesToActions.TryGetValue( state, out actions ) )
+                    var key = Tuple.Create( action.NewState, action.OutputSignal );
+                    if ( !_mooreStates.ContainsKey( key ) )
                     {
-                        foreach ( Action action in actions )
-                        {
-                            if ( !statesToActions.ContainsKey( state ) )
-                            {
-                                statesToActions.Add( state, new List<Action>() );
-                            }
-
-                            string newOutputSignal = equalClasses.Where( a => a.Value.Contains( action.NewState ) ).Select( a => a.Key ).First();
-                            statesToActions[state].Add( new Action( action.InputSignal, newOutputSignal, action.NewState ) );
-                        }
+                        _mooreStates.Add( key, GenerateMooreState() );
                     }
                 }
             }
-
-            return statesToActions;
         }
 
-        private Dictionary<string, List<string>> CombineEqualStates( Dictionary<string, List<Action>> statesToActions )
+        private string GenerateMooreState()
         {
-            Dictionary<string, List<string>> equalClasses = new Dictionary<string, List<string>>();
-            foreach ( KeyValuePair<string, List<Action>> stateToActions in statesToActions )
-            {
-                string actionsHash = Action.GetActionsHashCode( stateToActions.Value ).ToString();
-                if ( _prevEqualClasses.Count > 0 )
-                {
-                    string prevEqualClass = _prevEqualClasses.Where( a => a.Value.Contains( stateToActions.Key ) ).Select( a => a.Key ).First();
-                    actionsHash += prevEqualClass;
-                }
-
-                if ( !equalClasses.ContainsKey( actionsHash ) )
-                {
-                    equalClasses.Add( actionsHash, new List<string>() );
-                }
-                equalClasses[actionsHash].Add( stateToActions.Key );
-            }
-
-            return equalClasses;
+            _mooreStateCounter++;
+            return $"B{_mooreStateCounter}";
         }
     }
 }

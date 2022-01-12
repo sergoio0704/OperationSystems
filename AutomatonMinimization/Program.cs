@@ -7,7 +7,7 @@ namespace AutomatonMinimization
 {
     public class Program
     {
-        private static readonly string InputPath = @"../../../Input.txt";
+        private static readonly string InputPath = @"../../../MooreInput.txt";
         private static readonly string OutputPath = @"../../../Output.txt";
 
         public static void Main( string[] args )

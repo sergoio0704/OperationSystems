@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AutomatonMinimization
 {
@@ -13,22 +9,22 @@ namespace AutomatonMinimization
             switch ( minimizerType )
             {
                 case ConverterType.Mealy:
-                    return CreateMealyConverter();
+                    return CreateMealyMooreConverter();
                 case ConverterType.Moore:
-                    return CreateMooreConverter();
+                    return CreateMooreMealyConverter();
                 default:
                     throw new Exception();
             }
         }
 
-        private static IConverter CreateMealyConverter()
+        private static IConverter CreateMealyMooreConverter()
         {
-            return new MealyConverter();
+            return new MealyMooreConverter();
         }
 
-        private static IConverter CreateMooreConverter()
+        private static IConverter CreateMooreMealyConverter()
         {
-            return new MooreConverter();
+            return new MooreMealyConverter();
         }
     }
 }
