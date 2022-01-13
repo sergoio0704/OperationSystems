@@ -8,61 +8,37 @@ namespace RegularExpression
 {
     public class RightRegularExpressionParser : BaseRegularExpressionParser
     {
-        private readonly Dictionary<string, List<Transition>> _stateToTransitions = new();
-        private readonly Dictionary<string, List<string>> _stateToTransitionResults = new();
-
         public override void Parse( List<string> lines )
         {
-            //Dictionary<string, List<Transition>> stateToTransitions = new();
-            //foreach ( string line in lines )
-            //{
-            //    string[] leftRightParts = line.Split( " -> " );
-            //    string prevState = leftRightParts[0];
-            //    List<string> transitionResults = leftRightParts[1].Split( " | " ).ToList();
+            Dictionary<string, List<Transition>> statesToTransitions = new();
 
-            //    List<Transition> transitions = new();
-            //    foreach ( string transitionResult in transitionResults )
-            //    {
-            //        Transition transition = CreateTransition( prevState, transitionResult );
-
-            //    }
-            //}
             foreach ( string line in lines )
             {
                 string[] leftRightParts = line.Split( " -> " );
                 string prevState = leftRightParts[0];
                 List<string> transitionResults = leftRightParts[1].Split( " | " ).ToList();
-                if ( !_stateToTransitionResults.TryGetValue( prevState, out List<string> value ) )
+
+                List<Transition> transitions = new();
+                foreach ( string transitionResult in transitionResults )
                 {
-                    _stateToTransitionResults.Add( prevState, transitionResults );
+                    transitions.Add( CreateTransition( prevState, transitionResult ) );
                 }
-            }
 
-            foreach ( var stateToTranslationResult in _stateToTransitionResults )
-            {
-                ParseStateToTransitions( stateToTranslationResult );
+                statesToTransitions.Add( prevState, ConcatTransitionByInputSignal( transitions ) );
             }
-            
-        }
+            statesToTransitions.Add( EndStateLabel, new List<Transition>() );
 
-        private void ParseStateToTransitions( KeyValuePair<string, List<string>> stateToTranslationResult ) 
-        {
-            foreach ( var translationResult in stateToTranslationResult.Value )
-            {
-                
-            }
+            _result = GetNewStatesByValues( statesToTransitions );
         }
 
         private Transition CreateTransition( string prevState, string transitionResult )
         {
-            string newState = transitionResult[1].ToString();
-            string inputSignal = transitionResult[0].ToString();
             if ( transitionResult.Length == 1 )
             {
-                return new Transition( prevState, EndStateLabel, inputSignal );
+                return new Transition( prevState, EndStateLabel, transitionResult[0].ToString() );
             }
 
-            return new Transition( prevState, newState, inputSignal );
+            return new Transition( prevState, transitionResult[1].ToString(), transitionResult[0].ToString() );
         }
     }
 }

@@ -9,5 +9,6 @@ namespace RegularExpression
     public interface IRegularExpressionParser
     {
         void Parse( List<string> lines );
+        Dictionary<string, List<Transition>> GetResult();
     }
 }

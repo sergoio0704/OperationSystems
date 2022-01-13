@@ -21,5 +21,17 @@ namespace RegularExpression
         public string PrevState => _prevState;
         public string NewState => _newState;
         public string InputSignal => _inputSignal;
+
+        public override bool Equals( object obj )
+        {
+            return obj is Transition transition &&
+                     _newState == transition._newState &&
+                     NewState == transition.NewState;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine( _newState, NewState );
+        }
     }
 }

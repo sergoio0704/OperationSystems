@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace RegularExpression
 {
@@ -9,6 +7,7 @@ namespace RegularExpression
     {
         const string InputPath = "../../../RightGrammaInput.txt";
         const string OutputPath = "../../../Output.txt";
+
         static void Main( string[] args )
         {
             List<string> lines = new();
@@ -26,6 +25,19 @@ namespace RegularExpression
 
             IRegularExpressionParser parser = RegularExpressionParserFactory.GetRegularExpressionParser( grammarType );
             parser.Parse( lines );
+
+            using ( var streamWriter = new StreamWriter( OutputPath ) )
+            {
+                foreach ( var stateToTransitions in parser.GetResult() )
+                {
+                    streamWriter.Write( $"{stateToTransitions.Key }  " );
+                    foreach ( var transition in stateToTransitions.Value )
+                    {
+                        streamWriter.Write( $"{transition.NewState}({transition.InputSignal}) " );
+                    }
+                    streamWriter.WriteLine();
+                }
+            }
         }
     }
 }
