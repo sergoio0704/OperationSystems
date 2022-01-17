@@ -18,8 +18,8 @@ namespace Determination
 
         public abstract void Determinate( List<string> lines );
 
-        protected Dictionary<string, List<Transition>> GetNewStatesByValues( 
-            Dictionary<string, 
+        protected Dictionary<string, List<Transition>> GetNewStatesByValues(
+            Dictionary<string,
             List<Transition>> statesToTransitions )
         {
             var result = statesToTransitions.Aggregate( new Dictionary<string, List<Transition>>(), ( stt, next ) =>
@@ -30,7 +30,7 @@ namespace Determination
                             t.NewState,
                             ConcatTransitionByInputSignal( t.NewState.Length == 1
                                 ? next.Value
-                                : t.NewState.SelectMany( t => statesToTransitions[t.ToString()] ).Distinct().ToList()
+                                : t.NewState.SelectMany( c => c.ToString() ).Distinct().SelectMany( t => statesToTransitions[t.ToString()] ).ToList()
                             )
                         )
                     )
@@ -66,10 +66,13 @@ namespace Determination
                         else
                         {
                             Transition transition = list[i];
-                            list[i] = new Transition(
+                            if ( !transition.NewState.Contains( next.NewState ) )
+                            {
+                                list[i] = new Transition(
                                 transition.PrevState,
                                 transition.NewState + next.NewState,
                                 transition.InputSignal );
+                            }   
                         }
 
                         return list;

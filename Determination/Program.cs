@@ -5,7 +5,7 @@ namespace Determination
 {
     class Program
     {
-        const string InputPath = "../../../RightGrammaInput.txt";
+        const string InputPath = "../../../LeftGrammaInput.txt";
         const string OutputPath = "../../../Output.txt";
 
         static void Main( string[] args )

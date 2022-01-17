@@ -10,6 +10,8 @@ namespace Determination
             {
                 case GrammarType.Right:
                     return new RightDeterminator();
+                case GrammarType.Left:
+                    return new LeftDeterminator();
                 default:
                     throw new ArgumentException( $"Grammar type: {nameof( grammarType )} is unknown" );
             }
