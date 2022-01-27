@@ -14,29 +14,29 @@ namespace CSharpLexer
 
         private readonly Dictionary<TokenKind, string> _tokenKindToValue = new Dictionary<TokenKind, string>()
         {
-            { TokenKind.ACCESS_LEVEL_INTERNAL, "internal" },
-            { TokenKind.ACCESS_LEVEL_PRIVATE, "private" },
-            { TokenKind.ACCESS_LEVEL_PUBLIC, "public" },
+            { TokenKind.INTERNAL, "internal" },
+            { TokenKind.PRIVATE, "private" },
+            { TokenKind.PUBLIC, "public" },
             { TokenKind.ASSIGNMENT, "=" },
             { TokenKind.BLOCK_COMMENT_END, "*/" },
             { TokenKind.BLOCK_COMMENT_START, "/*" },
-            { TokenKind.BOOL, "boolean" },
-            { TokenKind.BOOLFALSE, "false" },
-            { TokenKind.BOOLTRUE, "true" },
-            { TokenKind.CHAR, "char" },
+            { TokenKind.BOOL_TYPE, "boolean" },
+            { TokenKind.FALSE, "false" },
+            { TokenKind.TRUE, "true" },
+            { TokenKind.CHAR_TYPE, "char" },
             { TokenKind.CLASS, "class" },
             { TokenKind.COLON, ":" },
             { TokenKind.COMMA, "," },
             { TokenKind.COMPARISON, "==" },
             { TokenKind.CONST, "const" },
             { TokenKind.DIVISION, "/" },
-            { TokenKind.DOUBLE, "double" },
+            { TokenKind.DOUBLE_TYPE, "double" },
             { TokenKind.ELSE, "else" },
             { TokenKind.FIGURE_BRACKET_CLOSE, "}" },
             { TokenKind.FIGURE_BRACKET_OPEN, "{" },
-            { TokenKind.FLOAT, "float" },
+            { TokenKind.FLOAT_TYPE, "float" },
             { TokenKind.IF, "if" },
-            { TokenKind.INTEGER, "int" },
+            { TokenKind.INTEGER_TYPE, "int" },
             { TokenKind.LESS, "<" },
             { TokenKind.LESS_OR_EQUAL, "<=" },
             { TokenKind.SUB, "-" },
@@ -243,10 +243,10 @@ namespace CSharpLexer
                                 switch ( token )
                                 {
                                     case "true":
-                                        tokenType = TokenKind.BOOLTRUE;
+                                        tokenType = TokenKind.TRUE;
                                         break;
                                     case "false":
-                                        tokenType = TokenKind.BOOLFALSE;
+                                        tokenType = TokenKind.FALSE;
                                         break;
                                     case "class":
                                         tokenType = TokenKind.CLASS;
@@ -255,28 +255,31 @@ namespace CSharpLexer
                                         tokenType = TokenKind.CONST;
                                         break;
                                     case "public":
-                                        tokenType = TokenKind.ACCESS_LEVEL_PUBLIC;
+                                        tokenType = TokenKind.PUBLIC;
                                         break;
                                     case "private":
-                                        tokenType = TokenKind.ACCESS_LEVEL_PRIVATE;
+                                        tokenType = TokenKind.PRIVATE;
                                         break;
                                     case "internal":
-                                        tokenType = TokenKind.ACCESS_LEVEL_INTERNAL;
+                                        tokenType = TokenKind.INTERNAL;
+                                        break;
+                                    case "protected":
+                                        tokenType = TokenKind.PROTECTED;
                                         break;
                                     case "boolean":
-                                        tokenType = TokenKind.BOOL;
+                                        tokenType = TokenKind.BOOL_TYPE;
                                         break;
                                     case "string":
-                                        tokenType = TokenKind.STRING;
+                                        tokenType = TokenKind.STRING_TYPE;
                                         break;
                                     case "char":
-                                        tokenType = TokenKind.CHAR;
+                                        tokenType = TokenKind.CHAR_TYPE;
                                         break;
                                     case "double":
-                                        tokenType = TokenKind.DOUBLE;
+                                        tokenType = TokenKind.DOUBLE_TYPE;
                                         break;
                                     case "float":
-                                        tokenType = TokenKind.FLOAT;
+                                        tokenType = TokenKind.FLOAT_TYPE;
                                         break;
                                     case "while":
                                         tokenType = TokenKind.WHILE;
@@ -291,12 +294,12 @@ namespace CSharpLexer
                                         tokenType = TokenKind.ELSE;
                                         break;
                                     case "int":
-                                        tokenType = TokenKind.INTEGER;
+                                        tokenType = TokenKind.INTEGER_TYPE;
                                         break;
                                     default:
                                         if ( id.Length <= IDENTIFIRY_MAX_LENGTH )
                                         {
-                                            tokenType = TokenKind.ID;
+                                            tokenType = TokenKind.IDENTIFIRY;
                                         }
                                         else
                                         {
