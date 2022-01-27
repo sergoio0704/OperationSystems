@@ -1,0 +1,34 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Lexer
+{
+    public class Test
+    {
+        string j = "3";
+        int a = 2;
+        char b = '2';
+        float c = 2.3;
+
+        const string AB = "123";
+        const string CD = "321";
+
+        private string j = "31232";
+        private readonly string i = "312312";
+
+        //Some method
+        public void Method()
+        {
+            int i = 0;
+            while(i != 0 && i >= 5)
+            {
+                Console.WriteLine("TestTest");
+            }
+        }
+
+        /*
+            Some comment
+        */
+    }
+}
