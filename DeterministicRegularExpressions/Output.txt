@@ -1,0 +1,8 @@
+S  SB(a) A(b) C(a) F(a) 
+A  C(a) F(a) 
+C  C(a) F(b) 
+B  F(a) C(a) 
+F  
+SB  SBF(a) A(b) C(a) F(b) 
+SBF  SBF(a) A(b) C(a) F(b) 
+AC  C(a) F(b) 
